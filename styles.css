@@ -70,13 +70,17 @@ button:active {
 
 #display {
   display: flex;
-  justify-content: right;
   align-items: center;
+  height: 120px;
+  width: 394px;
+  overflow: hidden;
 }
+
 #display-content {
   font-weight: 250;
   color: white;
   font-size: 90px;
+  margin-left: auto;
   padding-bottom: 14px;
   padding-right: 20px;
 }
