@@ -1,3 +1,4 @@
+////////////////////////////////////////////////////////////////////////
 // VARIABLES
 
 // Number before operator:
@@ -19,9 +20,79 @@ const numbers = document.querySelectorAll(".number");
 const operators = document.querySelectorAll(".operator");
 const equate = document.getElementById("equal");
 const changeSign = document.getElementById("change-sign");
-const toPercentage = document.getElementById("percentage");
+const percentage = document.getElementById("percentage");
 
+////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
+
+// Reset to defaults:
+const reset = function () {
+  displayContent.innerHTML = "0";
+  input1 = undefined;
+  input2 = undefined;
+  inpOperator = "";
+  operatorClicked = false;
+  secondNumber = false;
+};
+
+// Number input:
+const numberInp = function (number) {
+  // If operator is not clicked and display does not show '0', number input is appended:
+  if (!operatorClicked && displayContent.textContent !== "0") {
+    displayContent.textContent += number;
+
+    // If operator is clicked or display shows '0', number input overrides existing displayed content:
+  } else {
+    displayContent.textContent = number;
+    operatorClicked = false;
+  }
+
+  // If secondNumber is true, then input2 is updated:
+  if (secondNumber) {
+    input2 = displayContent.textContent;
+  } else {
+    input1 = displayContent.textContent;
+  }
+};
+
+// Operator input:
+const applyOperator = function (operator) {
+  // Not being on the second number and the display not being empty means we have input1:
+  if (!secondNumber && displayContent.textContent !== "") {
+    operatorClicked = true;
+    secondNumber = true;
+    inpOperator = operator;
+
+    // If it's a subsequent operator clicked (after input2):
+  } else {
+    // Calculating the answer to input1 and input2 with previous operator when next operator is clicked:
+    if (input1 !== undefined && input2 !== undefined) {
+      // input1 is replaced with the solution to the result of input1 and input2 with previous operator:
+      input1 = operate(input1, input2, inpOperator);
+      displayContent.textContent = input1;
+      inpOperator = operator;
+      operatorClicked = true;
+      secondNumber = true;
+      input2 = undefined;
+    }
+  }
+};
+
+// Equal to:
+const equateCalc = function () {
+  // Only calculate solution if valid input1, input2, and operator exist:
+  if (input1 !== undefined && input2 !== undefined && inpOperator !== "") {
+    // input1 is updated with result of input1 and input2 with previous operator for further calculations:
+    input1 = operate(input1, input2, inpOperator);
+    displayContent.textContent = input1;
+
+    // Reset:
+    input2 = undefined;
+    inpOperator = "";
+    operatorClicked = false;
+    secondNumber = false;
+  }
+};
 
 // Addition:
 const addition = function (num1, num2) {
@@ -55,7 +126,7 @@ const division = function (num1, num2) {
   }
 };
 
-// Function to round a non-integer to three decimal places:
+// Round a non-integer to three decimal places:
 const roundToThreeDecimalPlaces = function (num) {
   const roundedNum = Math.round(num * 1000) / 1000;
   const decimalPlaces = roundedNum.toString().split(".")[1];
@@ -89,87 +160,77 @@ const operate = function (num1, num2, operator) {
   }
 };
 
+// To percentage:
+const toPercentage = function () {
+  // Check which input has to be updated:
+  if (!secondNumber) {
+    input1 = input1 / 100;
+  } else {
+    input2 = input2 / 100;
+  }
+
+  // Update display:
+  let currentValue = parseFloat(displayContent.textContent);
+  displayContent.textContent = currentValue / 100;
+};
+
+// Keyboard input:
+const keyboardInp = function (event) {
+  const key = event.key;
+
+  if (!isNaN(key) && key !== " ") {
+    numberInp(key);
+  } else if (key === "+" || key === "-") {
+    applyOperator(key);
+  } else if (key === "/") {
+    applyOperator("÷");
+  } else if (key === "*") {
+    applyOperator("×");
+  } else if (key === "Enter") {
+    equateCalc();
+  } else if (key === "Escape") {
+    reset();
+  } else if (key === "%") {
+    toPercentage();
+  }
+};
+
+////////////////////////////////////////////////////////////////////////
 // EVENT LISTENERS
+
+// Handle keyboard input:
+document.addEventListener("keydown", keyboardInp);
 
 // Clear display content:
 clearContent.addEventListener("click", function () {
-  displayContent.innerHTML = "0";
-  input1 = undefined;
-  input2 = undefined;
-  inpOperator = "";
-  operatorClicked = false;
-  secondNumber = false;
+  reset();
 });
 
-// Number input:
+// Handle number input:
 numbers.forEach(function (number) {
   number.addEventListener("click", function () {
     // Ignore '0' button input in the calculator's default state:
     if (number.textContent === "0" && displayContent.textContent === "0") {
       return;
     } else {
-      // If operator is not clicked and display does not show '0', number input is appended:
-      if (!operatorClicked && displayContent.textContent !== "0") {
-        displayContent.textContent += number.textContent;
-
-        // If operator is clicked or display shows '0', number input overrides existing displayed content:
-      } else {
-        displayContent.textContent = number.textContent;
-        operatorClicked = false;
-      }
-
-      // If secondNumber is true, then input2 is updated:
-      if (secondNumber) {
-        input2 = displayContent.textContent;
-      } else {
-        input1 = displayContent.textContent;
-      }
+      numberInp(number.textContent);
     }
   });
 });
 
-// Operator input:
+// Handle operator input:
 operators.forEach(function (operator) {
   operator.addEventListener("click", function () {
     // Executes for all operators except '=' as it has a separate function:
     if (operator.textContent !== "=") {
-      // Not being on the second number and the display not being empty means we have input1:
-      if (!secondNumber && displayContent.textContent !== "") {
-        operatorClicked = true;
-        secondNumber = true;
-        inpOperator = operator.textContent;
-
-        // If it's a subsequent operator clicked (after input2):
-      } else {
-        // Calculating the answer to input1 and input2 with previous operator when next operator is clicked:
-        if (input1 !== undefined && input2 !== undefined) {
-          // input1 is replaced with the solution to the result of input1 and input2 with previous operator:
-          input1 = operate(input1, input2, inpOperator);
-          displayContent.textContent = input1;
-          inpOperator = operator.textContent;
-          operatorClicked = true;
-          secondNumber = true;
-          input2 = undefined;
-        }
-      }
+      applyOperator(operator.textContent);
     }
   });
 });
 
 // Equal to button:
 equate.addEventListener("click", function () {
-  // Only calculate solution if valid input1, input2, and operator exist:
-  if (input1 !== undefined && input2 !== undefined && inpOperator !== "") {
-    // input1 is updated with result of input1 and input2 with previous operator for further calculations:
-    input1 = operate(input1, input2, inpOperator);
-    displayContent.textContent = input1;
-
-    // Reset:
-    input2 = undefined;
-    inpOperator = "";
-    operatorClicked = false;
-    secondNumber = false;
-  }
+  equateCalc();
 });
 
 // Change number sign:
@@ -186,15 +247,6 @@ changeSign.addEventListener("click", function () {
   displayContent.textContent = -currentValue;
 });
 
-toPercentage.addEventListener("click", function () {
-  // Check which input has to be updated:
-  if (!secondNumber) {
-    input1 = input1 / 100;
-  } else {
-    input2 = input2 / 100;
-  }
-
-  // Update display:
-  let currentValue = parseFloat(displayContent.textContent);
-  displayContent.textContent = currentValue / 100;
+percentage.addEventListener("click", function () {
+  toPercentage();
 });
