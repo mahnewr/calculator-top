@@ -37,6 +37,14 @@ const reset = function () {
 
 // Number input:
 const numberInp = function (number) {
+  // Not allowing more than one decimal place:
+  if (number === ".") {
+    // Check if display content already contains a decimal point
+    if (displayContent.textContent.includes(".")) {
+      // If so, return without appending another decimal point
+      return;
+    }
+  }
   // If operator is not clicked and display does not show '0', number input is appended:
   if (!operatorClicked && displayContent.textContent !== "0") {
     displayContent.textContent += number;
@@ -178,7 +186,7 @@ const toPercentage = function () {
 const keyboardInp = function (event) {
   const key = event.key;
 
-  if (!isNaN(key) && key !== " ") {
+  if ((!isNaN(key) && key !== " ") || key === ".") {
     numberInp(key);
   } else if (key === "+" || key === "-") {
     applyOperator(key);
